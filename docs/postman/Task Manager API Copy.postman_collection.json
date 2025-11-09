@@ -1,0 +1,734 @@
+{
+	"info": {
+		"_postman_id": "4bc9a1f7-2a3b-49b4-afa4-140e4cf8b45a",
+		"name": "Task Manager API Copy",
+		"description": "RESTful API collection for Task Management System for SOFTXPERT Inc.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "30358504"
+	},
+	"item": [
+		{
+			"name": "Authentication",
+			"item": [
+				{
+					"name": "Login",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    const response = pm.response.json();",
+									"    if (response.success && response.data) {",
+									"        if (response.data.access_token) {",
+									"            pm.collectionVariables.set('access_token', response.data.access_token);",
+									"            pm.environment.set('access_token', response.data.access_token);",
+									"            console.log('Access token saved successfully');",
+									"        }",
+									"        if (response.data.user) {",
+									"            pm.collectionVariables.set('user_id', response.data.user.id);",
+									"            pm.collectionVariables.set('user_email', response.data.user.email);",
+									"        }",
+									"    }",
+									"} else {",
+									"    console.log('Login failed:', pm.response.code);",
+									"}"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"manager@softxpert.com\",\n    \"password\": \"password\",\n    \"remember_me\": false\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/login",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"auth",
+								"login"
+							]
+						},
+						"description": "User login endpoint. Returns access token and sets refresh token in HTTP-only cookie."
+					},
+					"response": []
+				},
+				{
+					"name": "Refresh Token",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    const response = pm.response.json();",
+									"    if (response.success && response.data) {",
+									"        if (response.data.access_token) {",
+									"            pm.collectionVariables.set('access_token', response.data.access_token);",
+									"            pm.environment.set('access_token', response.data.access_token);",
+									"            console.log('Access token refreshed successfully');",
+									"        }",
+									"    }",
+									"} else {",
+									"    console.log('Refresh token failed:', pm.response.code);",
+									"}"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"refresh_token\": \"{{refresh_token}}\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/refresh",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"auth",
+								"refresh"
+							]
+						},
+						"description": "Refresh access token using refresh token from cookie or request body."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Current User",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/auth/me",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"auth",
+								"me"
+							]
+						},
+						"description": "Get authenticated user details including roles and permissions."
+					},
+					"response": []
+				},
+				{
+					"name": "Logout",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/auth/logout",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"auth",
+								"logout"
+							]
+						},
+						"description": "Logout current user and revoke access token and refresh token."
+					},
+					"response": []
+				},
+				{
+					"name": "Logout All Devices",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/auth/logout-all",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"auth",
+								"logout-all"
+							]
+						},
+						"description": "Logout from all devices and revoke all access tokens and refresh tokens."
+					},
+					"response": []
+				}
+			],
+			"description": "Authentication endpoints for user login, logout, and token management."
+		},
+		{
+			"name": "Tasks",
+			"item": [
+				{
+					"name": "List Tasks",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/tasks?status=pending",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"tasks"
+							],
+							"query": [
+								{
+									"key": "assigned_to",
+									"value": "2",
+									"description": "Filter by assigned user ID",
+									"disabled": true
+								},
+								{
+									"key": "due_date_from",
+									"value": "2025-01-01",
+									"description": "Filter tasks due from this date (YYYY-MM-DD)",
+									"disabled": true
+								},
+								{
+									"key": "due_date_to",
+									"value": "2025-12-31",
+									"description": "Filter tasks due until this date (YYYY-MM-DD)",
+									"disabled": true
+								},
+								{
+									"key": "search",
+									"value": "task title",
+									"description": "Search in title and description",
+									"disabled": true
+								},
+								{
+									"key": "page",
+									"value": "1",
+									"description": "Page number for pagination",
+									"disabled": true
+								},
+								{
+									"key": "per_page",
+									"value": "15",
+									"description": "Items per page (default: 15)",
+									"disabled": true
+								},
+								{
+									"key": "status",
+									"value": "pending"
+								}
+							]
+						},
+						"description": "Get paginated list of tasks with optional filters. Managers can view all tasks, Users can only view tasks assigned to them."
+					},
+					"response": []
+				},
+				{
+					"name": "Create Task",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Accept",
+								"value": "application/vnd.api+json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"title\": \"New Task Title 3\",\n    \"description\": \"Task 3 description here\",\n    \"due_date\": \"2025-12-31\",\n    \"assigned_to\": 4\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/tasks",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"tasks"
+							]
+						},
+						"description": "Create a new task. Managers only. Title is required, other fields are optional."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Task Details",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/tasks/{{task_code}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"tasks",
+								"{{task_code}}"
+							]
+						},
+						"description": "Get details of a specific task including dependencies, assignee, and creator. Managers can view any task, Users can only view tasks assigned to them. Use task code (e.g., TSK-XXXXXXXXXXXX) instead of ID."
+					},
+					"response": []
+				},
+				{
+					"name": "Update Task",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"title\": \"Updated Task Title\",\n    \"description\": \"Updated description\",\n    \"due_date\": \"2025-12-31\",\n    \"assigned_to\": 3\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/tasks/{{task_code}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"tasks",
+								"{{task_code}}"
+							]
+						},
+						"description": "Update task details (title, description, due_date, assigned_to). Managers only. All fields are optional. Use task code (e.g., TSK-XXXXXXXXXXXX) instead of ID."
+					},
+					"response": []
+				},
+				{
+					"name": "Update Task Status",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"status\": \"completed\" //\"in_progress\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/tasks/{{task_code}}/status",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"tasks",
+								"{{task_code}}",
+								"status"
+							]
+						},
+						"description": "Update task status. Managers can update any task, Users can only update status of tasks assigned to them. Status: pending, in_progress, completed, canceled. Task cannot be completed if dependencies are not completed. Use task code (e.g., TSK-XXXXXXXXXXXX) instead of ID."
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Task",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/tasks/{{task_code}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"tasks",
+								"{{task_code}}"
+							]
+						},
+						"description": "Delete a task (soft delete). Managers only. Task can be restored if needed. Use task code (e.g., TSK-XXXXXXXXXXXX) instead of ID."
+					},
+					"response": []
+				},
+				{
+					"name": "Assign Task to User",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"user_id\": 5\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/tasks/{{task_code}}/assign",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"tasks",
+								"{{task_code}}",
+								"assign"
+							]
+						},
+						"description": "Assign a task to a user. Managers only. Use task code (e.g., TSK-XXXXXXXXXXXX) instead of ID."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Task Dependencies",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/tasks/{{task_code}}/dependencies",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"tasks",
+								"{{task_code}}",
+								"dependencies"
+							]
+						},
+						"description": "Get all dependencies for a task. Managers can view dependencies of any task, Users can view dependencies of tasks assigned to them. Use task code (e.g., TSK-XXXXXXXXXXXX) instead of ID."
+					},
+					"response": []
+				},
+				{
+					"name": "Add Task Dependencies",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"dependency_ids\": [\"TSK-BLNPBRQUYH30\"]\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/tasks/{{task_code}}/dependencies",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"tasks",
+								"{{task_code}}",
+								"dependencies"
+							]
+						},
+						"description": "Add dependencies to a task. Managers only. Cannot create circular dependencies, cannot add self as dependency, cannot add duplicate dependencies. Use task codes (e.g., TSK-XXXXXXXXXXXX) instead of IDs in dependency_ids array."
+					},
+					"response": []
+				},
+				{
+					"name": "Remove Task Dependency",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/tasks/{{task_code}}/dependencies/{{dependency_code}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"tasks",
+								"{{task_code}}",
+								"dependencies",
+								"{{dependency_code}}"
+							]
+						},
+						"description": "Remove a dependency from a task. Managers only. Use task codes (e.g., TSK-XXXXXXXXXXXX) instead of IDs."
+					},
+					"response": []
+				}
+			],
+			"description": "Task management endpoints for creating, updating, deleting, and managing tasks and their dependencies."
+		},
+		{
+			"name": "Users",
+			"item": [
+				{
+					"name": "List Users",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/users",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"users"
+							],
+							"query": [
+								{
+									"key": "role",
+									"value": "User",
+									"description": "Filter by role: Manager, User",
+									"disabled": true
+								},
+								{
+									"key": "search",
+									"value": "john",
+									"description": "Search by name or email",
+									"disabled": true
+								},
+								{
+									"key": "page",
+									"value": "1",
+									"description": "Page number for pagination",
+									"disabled": true
+								},
+								{
+									"key": "per_page",
+									"value": "15",
+									"description": "Items per page (default: 15)",
+									"disabled": true
+								}
+							]
+						},
+						"description": "Get paginated list of users for task assignment purposes. Managers only."
+					},
+					"response": []
+				}
+			],
+			"description": "User management endpoints for viewing users (for Managers to assign tasks)."
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:8000",
+			"type": "string"
+		},
+		{
+			"key": "api_base",
+			"value": "http://localhost:8000/api",
+			"type": "string"
+		},
+		{
+			"key": "access_token",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "refresh_token",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "user_id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "user_email",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "task_code",
+			"value": "",
+			"type": "string",
+			"description": {
+				"content": "Task code (e.g., TSK-XXXXXXXXXXXX)",
+				"type": "text/plain"
+			}
+		},
+		{
+			"key": "dependency_code",
+			"value": "",
+			"type": "string",
+			"description": {
+				"content": "Dependency task code (e.g., TSK-XXXXXXXXXXXX)",
+				"type": "text/plain"
+			}
+		}
+	]
+}
