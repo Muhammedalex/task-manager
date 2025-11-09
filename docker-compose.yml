@@ -13,12 +13,12 @@ services:
     ports:
       - "8000:8000"
     environment:
+      - DB_CONNECTION=mysql
       - DB_HOST=db
+      - DB_PORT=3306
       - DB_DATABASE=task_manager
-      - DB_USERNAME=task_user
-      - DB_PASSWORD=password
-    networks:
-      - task-manager-network
+      - DB_USERNAME=root
+      - DB_PASSWORD=
     depends_on:
       - db
 
@@ -28,20 +28,12 @@ services:
     restart: unless-stopped
     environment:
       MYSQL_DATABASE: task_manager
-      MYSQL_ROOT_PASSWORD: root
-      MYSQL_PASSWORD: password
-      MYSQL_USER: task_user
+      MYSQL_ROOT_PASSWORD: ""
     volumes:
       - dbdata:/var/lib/mysql
     ports:
-      - "3307:3306"   # لاحظ تغير المنفذ الخارجي لتجنب التعارض
-    networks:
-      - task-manager-network
+      - "3307:3306"  
 
 volumes:
   dbdata:
     driver: local
-
-networks:
-  task-manager-network:
-    driver: bridge

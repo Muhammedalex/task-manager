@@ -1,30 +1,25 @@
-# Base image
 FROM php:8.2-cli
 
 # Set working directory
 WORKDIR /var/www/html
 
 # Install system dependencies
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    git \
-    curl \
-    libpng-dev \
-    libonig-dev \
-    libxml2-dev \
-    libzip-dev \
-    zip \
-    unzip \
+RUN apt-get update && apt-get install -y \
+    git curl libpng-dev libonig-dev libxml2-dev libzip-dev zip unzip \
     && docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd zip \
-    && apt-get clean && rm -rf /var/lib/apt/lists/*
+    && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 # Install Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-# Copy all project files
-COPY . /var/www/html
+# Copy composer files first for caching
+COPY composer.json composer.lock ./
 
 # Install PHP dependencies
 RUN composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist
+
+# Copy the rest of the application
+COPY . /var/www/html
 
 # Set permissions
 RUN chown -R www-data:www-data /var/www/html \
@@ -34,8 +29,8 @@ RUN chown -R www-data:www-data /var/www/html \
 # Switch to www-data user
 USER www-data
 
-# Expose port for Laravel app
+# Expose port 8000
 EXPOSE 8000
 
-# Start Laravel server
+# Command to run Laravel
 CMD ["php", "artisan", "serve", "--host=0.0.0.0", "--port=8000"]
