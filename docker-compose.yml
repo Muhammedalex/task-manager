@@ -7,33 +7,40 @@ services:
       dockerfile: Dockerfile
     container_name: task-manager-app
     restart: unless-stopped
-    working_dir: /var/www/html
-    volumes:
-      - ./:/var/www/html
+    tty: true
+    environment:
+      SERVICE_NAME: task-manager-app
+      DB_CONNECTION: mysql
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_DATABASE: task_manager
+      DB_USERNAME: root
+      DB_PASSWORD: root
     ports:
       - "8000:8000"
-    environment:
-      - DB_CONNECTION=mysql
-      - DB_HOST=db
-      - DB_PORT=3306
-      - DB_DATABASE=task_manager
-      - DB_USERNAME=root
-      - DB_PASSWORD=
+    volumes:
+      - ./src:/var/www/html
     depends_on:
-      - db
+      - mysql
 
-  db:
+  mysql:
     image: mysql:8.0
     container_name: task-manager-db
     restart: unless-stopped
     environment:
+      MYSQL_ROOT_PASSWORD: root
       MYSQL_DATABASE: task_manager
-      MYSQL_ROOT_PASSWORD: ""
-    volumes:
-      - dbdata:/var/lib/mysql
+      MYSQL_USER: root
+      MYSQL_PASSWORD: root
     ports:
-      - "3307:3306"  
+      - "3306:3306"
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - mysql_data:/var/lib/mysql
 
 volumes:
-  dbdata:
-    driver: local
+  mysql_data:
