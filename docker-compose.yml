@@ -21,7 +21,6 @@ services:
       - task-manager-network
     depends_on:
       - db
-    command: php artisan serve --host=0.0.0.0 --port=8000
 
   db:
     image: mysql:8.0
@@ -35,7 +34,7 @@ services:
     volumes:
       - dbdata:/var/lib/mysql
     ports:
-      - "3306:3306"
+      - "3307:3306"   # لاحظ تغير المنفذ الخارجي لتجنب التعارض
     networks:
       - task-manager-network
 
@@ -46,4 +45,3 @@ volumes:
 networks:
   task-manager-network:
     driver: bridge
-
