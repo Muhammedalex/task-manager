@@ -575,6 +575,8 @@ The custom Exception Handler (`app/Exceptions/Handler.php`) automatically handle
 
 The project includes Docker configuration for easy deployment and development.
 
+> 📖 **For detailed Docker setup instructions, see [DOCKER_SETUP.md](DOCKER_SETUP.md)**
+
 ### Prerequisites
 
 - Docker
@@ -582,34 +584,75 @@ The project includes Docker configuration for easy deployment and development.
 
 ### Running with Docker
 
-1. **Build and start containers:**
+**Quick Start:**
+
+1. **Clone the repository and navigate to the project:**
+
+```bash
+git clone <repository-url>
+cd task-manager
+```
+
+2. **Create `.env` file (copy from `.env.example` if exists, or create manually):**
+
+```bash
+# On Linux/Mac
+cp .env.example .env
+
+# Or create manually with these settings:
+```
+
+Add these to your `.env` file:
+```env
+APP_NAME="Task Management System"
+APP_ENV=local
+APP_KEY=
+APP_DEBUG=true
+APP_URL=http://localhost:8000
+
+DB_CONNECTION=mysql
+DB_HOST=db
+DB_PORT=3306
+DB_DATABASE=task_manager
+DB_USERNAME=task_user
+DB_PASSWORD=password
+```
+
+3. **Build and start containers:**
 
 ```bash
 docker-compose up -d --build
 ```
 
-2. **Install dependencies:**
+4. **Wait for MySQL to be ready (about 10-20 seconds), then install dependencies:**
 
 ```bash
 docker-compose exec app composer install
 ```
 
-3. **Generate application key:**
+5. **Generate application key:**
 
 ```bash
 docker-compose exec app php artisan key:generate
 ```
 
-4. **Run migrations:**
+6. **Run migrations:**
 
 ```bash
 docker-compose exec app php artisan migrate
 ```
 
-5. **Seed the database:**
+7. **Seed the database:**
 
 ```bash
 docker-compose exec app php artisan db:seed
+```
+
+**That's it!** Your API is now running at `http://localhost:8000`
+
+**Note:** If you encounter any errors, check the logs:
+```bash
+docker-compose logs -f
 ```
 
 ### Docker Services
